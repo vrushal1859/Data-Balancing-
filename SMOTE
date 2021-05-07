@@ -1,0 +1,5 @@
+	sm = SMOTE(random_state = 1)  
+	xtrain_cm_sm, ytrain_cm_sm = sm.fit_sample(xtrain_cm, ytrain_cm.ravel())  
+  print('Original train dataset shape %s' % Counter(ytrain))  
+	print('Resampled train dataset shape %s' % Counter(ytrain_cm_sm))  
+	print('Original validation dataset shape %s' % Counter(ytest))  
