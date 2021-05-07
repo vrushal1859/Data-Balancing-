@@ -1,0 +1,58 @@
+train_ds_tnn = torch.utils.data.TensorDataset(torch.tensor(xtrain).float(), torch.tensor(ytrain).float())
+valid_ds_tnn = torch.utils.data.TensorDataset(torch.tensor(xtest).float(), torch.tensor(ytest).float())
+
+# Creating Torch dataloader for training Truth NN
+bs =128 # Batch Size
+train_dl_tnn = torch.utils.data.DataLoader(train_ds_tnn, batch_size=bs)
+valid_dl_tnn = torch.utils.data.DataLoader(valid_ds_tnn, batch_size=bs)
+
+# Static Model Parameters
+n_input = xtrain.shape[1]
+n_output = 1
+n_hidden = 20
+
+# Initializing the Truth NN model
+TNN = Classifier(n_input=n_input,n_hidden=n_hidden,n_output=n_output,drop_prob=0.2)
+
+# Static Training Parameters
+lr = 0.005   # Learning Rate
+pos_weight = torch.tensor([5])  # weight adjustment for class imbalance
+opt = torch.optim.SGD(TNN.parameters(), lr=lr, momentum=0.9) #Optimizer
+loss_func = torch.nn.BCEWithLogitsLoss(pos_weight=pos_weight)  #Loss function
+#loss_func = torch.nn.BCELoss()
+n_epoch = 50  # No. of epochs to run training
+
+# Start Training
+train_loss_tnn, val_loss_tnn = train(n_epoch,TNN,loss_func,opt,train_dl_tnn,valid_dl_tnn)
+Falsity Neural Network
+
+# Preparing complement targets for "Falsity NN"
+ytrain_fnn = 1-ytrain
+ytest_fnn = 1-ytest
+
+# Creating Torch dataset for training Falsity NN
+train_ds_fnn = torch.utils.data.TensorDataset(torch.tensor(xtrain).float(), torch.tensor(ytrain_fnn).float())
+valid_ds_fnn = torch.utils.data.TensorDataset(torch.tensor(xtest).float(), torch.tensor(ytest_fnn).float())
+
+# Creating Torch dataloader for training Falsity NN
+bs =128 # Batch Size
+train_dl_fnn = torch.utils.data.DataLoader(train_ds_fnn, batch_size=bs)
+valid_dl_fnn = torch.utils.data.DataLoader(valid_ds_fnn, batch_size=bs)
+
+# Static Model Parameters
+n_input = xtrain.shape[1]
+n_output = 1
+n_hidden = 20
+
+# Initializing the "Falsity NN" model
+FNN = Classifier(n_input=n_input,n_hidden=n_hidden,n_output=n_output,drop_prob=0.2)
+# Start Training
+train_loss_fnn, val_loss_fnn = train(n_epoch,FNN,loss_func,opt,train_dl_fnn,valid_dl_fnn)
+
+
+M_intersection = list(set(M_fnn).intersection(M_tnn))
+M_union = list(set(M_fnn).union(M_tnn))
+
+
+xtrain_cm = np.delete(xtrain, M_union, axis=0)
+ytrain_cm = np.delete(ytrain, M_union, axis=0)
